@@ -133,3 +133,6 @@ dmypy.json
 
 # Db files
 *.db
+
+# Mac files
+.DS_Store

@@ -3,9 +3,10 @@ import re
 import io
 import sys
 import pkgutil
+import asyncio
 import subprocess
 import importlib.util
-from aiogram import Dispatcher
+from aiogram import Bot, Dispatcher
 from typing import List, Optional
 from bot.models import Plugin
 from bot.config import logger, config
@@ -16,14 +17,15 @@ class PluginManager:
     """
     Manages the loading and synchronization of plugins.
     """
-    def __init__(self):
+    def __init__(self, db: Dispatcher, bot: Bot):
         """
         Initializes the PluginManager with a directory for plugins and an internal list of loaded plugins.
 
         :param plugins_dir: Directory where plugins are located.
         """
         self.plugins_dir = config.PLUGINS_DIR
-        self.dispatcher = None
+        self.dispatcher = db
+        self.bot = bot
         self.loaded_plugins: List[Plugin] = []
 
     def _install_dependencies(self, dependencies: List[str]) -> bool:
@@ -42,23 +44,34 @@ class PluginManager:
                 return False  # Return False if installation fails
         return True
 
-    def _load_plugin(self, plugin_name: str) -> Optional[any]:
+    def _load_plugin(self, plugin: Plugin) -> Optional[any]:
         """
-        Loads the plugin dynamically by its name from the plugin directory.
+        Loads the plugin dynamically and executes its tasks.
 
-        :param plugin_name: The name of the plugin to load.
+        :param plugin: The plugin object containing its name, path, and functions.
         :return: The router object if found, None otherwise.
         """
-        plugin_path = os.path.join(self.plugins_dir, f"{plugin_name}.py")
 
         # Ensure the plugin file exists
-        if not os.path.exists(plugin_path):
-            raise FileNotFoundError(f"Plugin file {plugin_name}.py not found")
+        if not os.path.exists(plugin.file_path):
+            raise FileNotFoundError(f"Plugin file {plugin.name}.py not found")
 
         # Load the plugin module dynamically
-        spec = importlib.util.spec_from_file_location(plugin_name, plugin_path)
+        spec = importlib.util.spec_from_file_location(plugin.name, plugin.file_path)
         plugin_module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(plugin_module)
+
+        # Find and execute functions marked as "task"
+        for function in plugin.functions:
+            if function.function_type != "task":
+                continue
+
+            task_function = getattr(plugin_module, function.name, None)
+            if not callable(task_function):
+                logger.warning(f"Task function {function.name} not found in plugin {plugin.name}")
+                continue
+
+            asyncio.create_task(task_function(self.bot))  
 
         return getattr(plugin_module, 'router', None)
 
@@ -144,7 +157,7 @@ class PluginManager:
         """
         for plugin in self.loaded_plugins:
             try:
-                router = self._load_plugin(plugin.name)
+                router = self._load_plugin(plugin)
                 if router:
                     dp.include_router(router)
                     logger.info(f"Registered router for plugin '{plugin.name}'.")

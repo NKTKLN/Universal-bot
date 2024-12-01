@@ -1,18 +1,14 @@
 import asyncio
-from aiogram import Bot, Dispatcher
 from bot.db import add_user
 from bot.config import config, logger
 from bot.plugins import plugin_manager
 from bot.handlers import register_handlers
 from bot.db.database import create_db_and_tables
+from bot.loader import plugin_manager, bot, dp
 
 
 async def main() -> None:
     logger.info("Starting bot...")
-
-    bot = Bot(token=config.BOT_TOKEN)
-    dp = Dispatcher()
-    plugin_manager.dispatcher = dp
 
     # Database initialization
     logger.info("Initializing database...")

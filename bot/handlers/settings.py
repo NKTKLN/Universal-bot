@@ -1,6 +1,6 @@
 from aiogram.enums import ParseMode
 from aiogram import Router, types, F
-from bot.plugins import plugin_manager
+from bot.loader import plugin_manager
 from bot.middlewares import AccessLevel
 from bot.keyboards import settings_menu, all_plugins_removal_confirmation_buttons, creator_info_buttons
 

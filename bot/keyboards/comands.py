@@ -1,5 +1,5 @@
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
-from bot.plugins import plugin_manager
+from bot.loader import plugin_manager
 
 # Function to create a menu with the list of available commands
 def commands_menu():

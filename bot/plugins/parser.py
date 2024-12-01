@@ -109,15 +109,15 @@ def parse_functions_and_descriptions(plugin_code: str) -> List[Function]:
 
     # Look for function definitions with comments starting with "name:", "type:", and "description:"
     function_matches = re.findall(
-        r'\s*name:\s*(.*).*?type:\s*(\w+).*?description:\s*(.*?)\s*\"\"\"', 
+        r'\s*name:\s*([^\t\n]+).*?type:\s*(\w+).*?description:\s*(.*?)\s*\"\"\"', 
         plugin_code, re.DOTALL
     )
 
     for match in function_matches:
         function = Function(
-            name=match[0],           # The alias name for the function
-            function_type=match[1],  # The type of the function
-            description=match[2]     # The description of the function
+            name=match[0].replace("\n", ""),  # The alias name for the function
+            function_type=match[1],           # The type of the function
+            description=match[2]              # The description of the function
         )
         functions.append(function)
 

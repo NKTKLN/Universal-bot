@@ -4,8 +4,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from bot.middlewares import AccessLevel
 from aiogram.enums import ParseMode
+from bot.loader import plugin_manager
 from bot.keyboards import upload_plugin_buttons
-from bot.plugins import plugin_manager
 
 router = Router()
 

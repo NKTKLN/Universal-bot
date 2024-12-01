@@ -2,7 +2,7 @@ from aiogram.enums import ParseMode
 from aiogram import Router, types, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from bot.plugins import plugin_manager
+from bot.loader import plugin_manager
 from bot.middlewares import AccessLevel
 from bot.keyboards import plugins_menu, plugin_action_buttons, plugin_removal_confirmation_buttons, main_menu
 

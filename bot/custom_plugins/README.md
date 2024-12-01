@@ -1,89 +1,145 @@
-# Plugin Creation Documentation for Your System
+# Plugin Creation Documentation
 
-## 1. Plugin Structure
+## 1. Plugin Metadata Structure
 
-Each plugin in the system should be implemented as a Python module containing specific structure and functionality. Below is the basic structure of a plugin:
+Each plugin is implemented as a Python module containing metadata and core functionality. The metadata is defined as a comment block at the beginning of the file and follows this structure:
 
 ```python
 """
-Plugin: example_plugin  # Unique name for the plugin
-Title: Example plugin  # The name that will be displayed in the plugin menu
+Plugin: unique_plugin_name  # Unique name for the plugin
+Title: Plugin Title  # Displayed name of the plugin
 Version: 1.0.0  # Plugin version
-Description: Example plugin to demonstrate structure.  # Plugin description
+Description: A brief description of the plugin’s functionality.
 
-Install: firstPackage
-Install: ...
+Install: package_name  # Dependencies required for the plugin
+Install: another_package  # Add as many dependencies as needed
 """
 ```
 
-- **Plugin:** (mandatory field) The unique name of the plugin.
-- **Title:** (optional field) The name of the plugin that will be displayed in the plugin menu.
-- **Version:** (optional field) The version of the plugin.
-- **Description:** (optional field) A brief description of the plugin’s functionality.
-- **Install:** (optional field) Can be specified as many times as needed to install the necessary packages for the plugin.
+### Metadata Fields
+
+- **Plugin** (mandatory): A unique identifier for the plugin.
+- **Title** (optional): The display name of the plugin.
+- **Version** (optional): The version of the plugin, adhering to semantic versioning.
+- **Description** (optional): A brief description of what the plugin does.
+- **Install** (optional): Specifies the packages required for the plugin. Add one line for each dependency.
+
+---
 
 ## 2. Core Plugin Code
 
-After declaring the plugin metadata, you need to implement the plugin's core code. This typically involves handling commands and buttons using the `aiogram` library. The plugin should be registered in a `Router` that manages message handling.
+The plugin's main functionality should use the `aiogram` library. It handles commands, buttons, and background tasks via an `aiogram.Router`.
 
-Here is an example of a plugin that handles a command and a button press:
+### Example Plugin
+
+Here’s an example of a plugin that responds to a command and a button press:
 
 ```python
+"""
+Plugin: example_plugin
+Title: Example Plugin
+Version: 1.0.0
+Description: Demonstrates a plugin structure with command and button actions.
+"""
+
 from aiogram import Router, F
 from aiogram.types import Message
 from aiogram.filters import Command
 
 router = Router()
 
-@router.message(Command("example"))  # Command handler for /example
-async def example_command(message: Message):
+@router.message(Command("example"))
+async def handle_example_command(message: Message):
     """
-    name: example_1  # Unique name for the command
-    type: command  # Action type (command)
-    description: An example of a command that demonstrates how the plugin works.
-    
-    Handles the /example command and sends a response with the plugin description.
+    name: example_command
+    type: command
+    description: Responds to the /example command with a demonstration message.
     """
-    await message.answer("This is an example of a plugin.")
+    await message.answer("This is an example command response.")
 
-@router.message(F.text == "example")  # Button handler for the text "example"
-async def example_command_button(message: Message):
+@router.message(F.text == "example_button")
+async def handle_example_button(message: Message):
     """
-    name: example_2  # Unique name for the button
-    type: button  # Action type (button)
-    description: An example of a button that demonstrates how the plugin works.
-    
-    Responds when the button with the text 'example' is pressed.
+    name: example_button
+    type: button
+    description: Responds when the button with the text 'example_button' is pressed.
     """
-    await message.answer("This is an example of a plugin.")
+    await message.answer("This is an example button response.")
 ```
 
-## 3. Command and Button Description Format
+---
 
-Each action in the plugin (command or button) should be described using special comments so the system can correctly display plugin information:
+## 3. Action Documentation Format
+
+Each plugin action (e.g., command, button, or task) requires descriptive metadata in the form of comments for system integration:
 
 ```python
 """
-name: example_1  # Unique name for the action
-type: command  # Type of action (e.g., command or button)
-description: An example of a command that demonstrates how the plugin works.  # Action description
+name: action_name  # Unique identifier for the action
+type: action_type  # The type of action: 'command', 'button', or 'task'
+description: A brief explanation of the action’s purpose and behavior.
 """
 ```
 
-- **name:** (mandatory field) A unique name for the action. It should be short and descriptive.
-- **type:** (optional field) The type of action. For example, `command` for a command or `button` for a button press.
-- **description:** (optional field) A description of what the action does (e.g., what response is sent to the user).
+### Fields
 
-## 4. Developing Additional Plugins
+- **name** (mandatory): Unique identifier for the action.
+- **type** (mandatory): Type of the action:
+  - `command` for slash commands.
+  - `button` for text-based buttons.
+  - `task` for background tasks.
+- **description** (optional): Describes the action's purpose and behavior.
 
-To create new plugins, you need to follow the structure above and add new command or button handlers. Here's an example of a new plugin:
+---
+
+## 4. Background Tasks with `asyncio`
+
+Background tasks are actions that run continuously or at specific intervals. They use the `asyncio` library and should include metadata.
+
+### Example Background Task Plugin
+
+```python
+"""
+Plugin: daily_message
+Title: Daily Message Plugin
+Version: 1.0.0
+Description: Sends a daily message to all subscribed users at 6:00 AM.
+"""
+
+import asyncio
+from datetime import datetime, timedelta
+from aiogram import Bot
+from bot.db import get_all_users  # Custom module to retrieve user data
+
+async def daily_task(bot: Bot):
+    """
+    name: daily_task
+    type: task
+    description: Sends a daily greeting to all users at 6:00 AM.
+    """
+    while True:
+        now = datetime.now()
+        next_run = (now + timedelta(days=1)).replace(hour=6, minute=0, second=0, microsecond=0)
+        sleep_duration = (next_run - now).total_seconds()
+        await asyncio.sleep(sleep_duration)
+
+        users = get_all_users()  # Retrieve user list from database
+        for user in users:
+            await bot.send_message(chat_id=user.id, text="Good morning! 🌅 Here's your daily message.")
+```
+
+---
+
+## 5. Creating New Plugins
+
+When developing new plugins, follow the same structure for metadata, actions, and implementation. Here's an example of another plugin:
 
 ```python
 """
 Plugin: new_plugin
-Title: New plugin
+Title: New Plugin
 Version: 1.0.0
-Description: A new plugin to demonstrate plugin creation.
+Description: Demonstrates how to create a new plugin with command and button actions.
 """
 
 from aiogram import Router, F
@@ -93,32 +149,33 @@ from aiogram.filters import Command
 router = Router()
 
 @router.message(Command("new_command"))
-async def new_command(message: Message):
+async def handle_new_command(message: Message):
     """
-    name: new_command_1
+    name: new_command
     type: command
-    description: This is a new command that demonstrates how the plugin works.
-    
-    Handles the /new_command command and sends a new message.
+    description: Handles the /new_command and demonstrates a new plugin command.
     """
-    await message.answer("This is a new plugin command.")
+    await message.answer("This is a new plugin command response.")
 
 @router.message(F.text == "new_button")
-async def new_command_button(message: Message):
+async def handle_new_button(message: Message):
     """
-    name: new_button_1
+    name: new_button
     type: button
-    description: This is a new button that demonstrates how the plugin works.
-    
-    Responds when the button with the text 'new_button' is pressed.
+    description: Responds when the button with the text 'new_button' is pressed.
     """
-    await message.answer("This is a new plugin button.")
+    await message.answer("This is a new plugin button response.")
 ```
 
-## 5. Recommendations
+---
 
-- Plugins should be independent and not rely on other plugins to ensure flexibility and modularity.
-- Each plugin should have unique names for commands and buttons to avoid conflicts with other plugins.
-- Well-structured and clear descriptions will help in further development and usage of plugins.
+## 6. Best Practices
 
-By following this structure, you can easily create new plugins for your system while maintaining consistency and expandability.
+- **Modularity:** Each plugin should be self-contained, with no dependencies on other plugins.
+- **Unique Identifiers:** Use unique names for plugins, commands, and actions to avoid conflicts.
+- **Clear Descriptions:** Provide concise and clear descriptions for better usability and maintenance.
+- **Test Thoroughly:** Verify plugin functionality in isolation and with other plugins in the system.
+
+---
+
+By adhering to these guidelines, you can create robust, maintainable, and expandable plugins for your system.

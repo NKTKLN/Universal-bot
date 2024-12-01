@@ -1,5 +1,5 @@
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
-from bot.plugins import plugin_manager
+from bot.loader import plugin_manager
 
 # Menu with the list of available plugins
 def plugins_menu():

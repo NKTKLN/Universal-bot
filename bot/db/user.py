@@ -41,3 +41,17 @@ async def get_user_access_level(user_id: int) -> int:
         if user:
             return user.access_level
         return 0
+
+
+# Getting all users
+async def get_all_users() -> list[User]:
+    """
+    Retrieves all users from the database.
+
+    :return: A list of User objects.
+    """
+    users = []
+    async for session in get_session():
+        result = await session.execute(select(User))
+        users = result.scalars().all()
+    return users

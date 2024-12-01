@@ -3,4 +3,4 @@ services:
     build: .
     container_name: Universal_Bot
     volumes:
-      - ./database.db:/app/database.db  # Mount the local database.db to the container
+      - ./db:/app/db  # Mount the local database to the container

@@ -131,8 +131,5 @@ dmypy.json
 # Pycharm
 .idea/
 
-# Db files
-*.db
-
 # Mac files
 .DS_Store

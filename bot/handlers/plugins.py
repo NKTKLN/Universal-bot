@@ -108,5 +108,6 @@ async def confirm_plugin_deletion(callback_query: types.CallbackQuery, state: FS
     await state.set_state(PluginState.waiting_for_plugin)  # Reset to plugin selection state
     await callback_query.message.edit_text(
         text=f"<b>✅ The plugin '{plugin_to_delete.title or plugin_to_delete.name}' has been successfully removed.</b>",
-        parse_mode=ParseMode.HTML
+        parse_mode=ParseMode.HTML,
+        reply_markup=plugins_menu()
     )

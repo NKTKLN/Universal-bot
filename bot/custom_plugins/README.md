@@ -10,6 +10,9 @@ Plugin: example_plugin  # Unique name for the plugin
 Title: Example plugin  # The name that will be displayed in the plugin menu
 Version: 1.0.0  # Plugin version
 Description: Example plugin to demonstrate structure.  # Plugin description
+
+Install: firstPackage
+Install: ...
 """
 ```
 
@@ -17,6 +20,7 @@ Description: Example plugin to demonstrate structure.  # Plugin description
 - **Title:** (optional field) The name of the plugin that will be displayed in the plugin menu.
 - **Version:** (optional field) The version of the plugin.
 - **Description:** (optional field) A brief description of the plugin’s functionality.
+- **Install:** (optional field) Can be specified as many times as needed to install the necessary packages for the plugin.
 
 ## 2. Core Plugin Code
 

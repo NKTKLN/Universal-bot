@@ -26,6 +26,7 @@ def get_plugin_metadata_from_content(plugin_code: str) -> Plugin:
         title=plugin_metadata['title'],
         version=plugin_metadata['version'],
         description=plugin_metadata['description'],
+        dependencies=plugin_metadata['dependencies'],
         functions=functions,
         file_path=None
     )
@@ -67,7 +68,8 @@ def parse_plugin_metadata(plugin_code: str) -> Dict[str, Optional[str]]:
         'name': None,
         'title': None,
         'version': None,
-        'description': None
+        'description': None,
+        'dependencies': []
     }
 
     # Search for plugin id, name, version, and description in the comments at the start of the file
@@ -88,6 +90,10 @@ def parse_plugin_metadata(plugin_code: str) -> Dict[str, Optional[str]]:
     description_match = re.search(r'Description:\s*(.*)', plugin_code)
     if description_match:
         metadata['description'] = description_match.group(1)
+
+    install_matches = re.findall(r'Install:\s*(\S+)', plugin_code)
+    if install_matches:
+        metadata['dependencies'] = install_matches
 
     return metadata
 

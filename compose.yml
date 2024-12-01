@@ -2,6 +2,7 @@ services:
   app:
     build: .
     container_name: Universal_Bot
+    restart: unless-stopped
     volumes:
       - ./db:/app/db
       - ./plugins:/app/bot/custom_plugins

@@ -37,6 +37,11 @@ If you want to create your own plugins, you can find the documentation for writi
 docker compose up --build -d
 ```
 
+## 📝 ToDo
+
+- [ ] Add the ability to store plugin data in the database
+- [ ] Fix the need to reboot when loading a new version of the plugin
+
 ## 📃 License
 
 All my apps are released under the MIT license, see [LICENSE.md](https://github.com/NKTKLN/Universal-bot/blob/master/LICENSE) for full text.

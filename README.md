@@ -22,7 +22,7 @@ BOT_TOKEN="110201544:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw"
 OWNER_ID=1234567890
 
 # Database settings
-DATABASE_URL="sqlite+aiosqlite:///database.db"
+DATABASE_URL="sqlite+aiosqlite:///db/database.db"
 ```
 
 You can get your bot token by contacting [@BotFather](https://t.me/BotFather) on Telegram.

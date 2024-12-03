@@ -14,6 +14,8 @@ def settings_menu():
     # builder.button(text="🧹 Reset Plugin Settings")
     # Button to reboot the bot
     builder.button(text="🔄 Reboot")
+    # Button to send bot logs
+    builder.button(text="📝 Logs")
     # Button to return to the main menu
     builder.button(text="🔙 Back to Main Menu")
     

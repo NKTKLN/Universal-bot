@@ -1,8 +1,10 @@
 import os
+import io
 import sys
 from aiogram.enums import ParseMode
 from aiogram import Router, types, F
 from aiogram.filters import Command
+from bot.config import log_stream
 from bot.loader import plugin_manager
 from bot.middlewares import AccessLevel
 from bot.keyboards import settings_menu, all_plugins_removal_confirmation_buttons, creator_info_buttons
@@ -42,6 +44,19 @@ async def reboot_bot(message: types.Message):
     
     # Pass user_id as arguments when restarting the bot
     os.execv(sys.executable, ['python'] + sys.argv + ['--user_id', str(message.from_user.id)])
+
+# Command to send logs
+@router.message(Command("logs"))
+@router.message(F.text == "📝 Logs")
+async def send_logs(message: types.Message):
+    # Retrieve the log content from StringIO
+    log_content = log_stream.getvalue()
+    
+    # Create a BufferedInputFile with the log content, encoded in UTF-8
+    log_file = types.BufferedInputFile(log_content.encode('utf-8'), filename="logs.txt")
+
+    # Send the log file to the user with a caption
+    await message.answer_document(log_file, caption="<b>Here is the log file since the bot started.</b>", parse_mode=ParseMode.HTML)
 
 # Command to ask for confirmation to delete all plugins
 @router.message(F.text == "🗑 Delete All Plugins")

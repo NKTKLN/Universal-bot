@@ -1,5 +1,8 @@
+import os
+import sys
 from aiogram.enums import ParseMode
 from aiogram import Router, types, F
+from aiogram.filters import Command
 from bot.loader import plugin_manager
 from bot.middlewares import AccessLevel
 from bot.keyboards import settings_menu, all_plugins_removal_confirmation_buttons, creator_info_buttons
@@ -19,6 +22,7 @@ async def show_settings_menu(message: types.Message):
     )
 
 # Command to show creator information
+@router.message(Command("info"))
 @router.message(F.text == "ℹ️ Information")
 async def show_creator_info(message: types.Message):
     await message.answer(
@@ -26,6 +30,18 @@ async def show_creator_info(message: types.Message):
         parse_mode=ParseMode.HTML,
         reply_markup=creator_info_buttons()
     )
+
+# Command to reboot the bot
+@router.message(Command("reboot"))
+@router.message(F.text == "🔄 Reboot")
+async def reboot_bot(message: types.Message):
+    await message.answer(
+        text="<b>🔄 Rebooting the bot...</b>",
+        parse_mode=ParseMode.HTML
+    )
+    
+    # Pass user_id as arguments when restarting the bot
+    os.execv(sys.executable, ['python'] + sys.argv + ['--user_id', str(message.from_user.id)])
 
 # Command to ask for confirmation to delete all plugins
 @router.message(F.text == "🗑 Delete All Plugins")

@@ -12,6 +12,8 @@ def settings_menu():
     builder.button(text="🗑 Delete All Plugins")
     # Button to reset plugin settings (currently commented out)
     # builder.button(text="🧹 Reset Plugin Settings")
+    # Button to reboot the bot
+    builder.button(text="🔄 Reboot")
     # Button to return to the main menu
     builder.button(text="🔙 Back to Main Menu")
     

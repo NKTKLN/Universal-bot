@@ -40,7 +40,6 @@ docker compose up --build -d
 ## 📝 ToDo
 
 - [ ] Add the ability to store plugin data in the database
-- [ ] Fix the need to reboot when loading a new version of the plugin
 - [ ] Add the ability to update the bot in the settings
 
 ## 📃 License

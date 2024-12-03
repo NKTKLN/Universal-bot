@@ -6,3 +6,5 @@ services:
     volumes:
       - ./db:/app/db
       - ./plugins:/app/bot/custom_plugins
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro

@@ -23,28 +23,26 @@ class Config(BaseSettings):
 
 config = Config()
 
-# Создание объекта StringIO для записи логов в строку
+# Create a StringIO object for logging to a string
 log_stream = io.StringIO()
 
-# Настройка базовой конфигурации логирования
+# Configure basic logging settings
 logging.basicConfig(
     level=config.LOG_LEVEL,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     stream=sys.stdout
 )
 
-# Создаем логгер
+# Create a logger
 logger = logging.getLogger(__name__)
 
-# Создание обработчика для записи в StringIO
+# Create a handler for logging to StringIO
 string_handler = logging.StreamHandler(log_stream)
-
-# Настройка уровня логирования для нового обработчика
 string_handler.setLevel(config.LOG_LEVEL)
 
-# Создание формата для лога и привязка его к обработчику
+# Set the log format for the handler
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 string_handler.setFormatter(formatter)
 
-# Добавление обработчика для записи в StringIO
+# Add the StringIO handler to the logger
 logger.addHandler(string_handler)

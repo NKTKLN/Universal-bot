@@ -46,7 +46,12 @@ from aiogram import Router, F
 from aiogram.types import Message
 from aiogram.filters import Command
 
+from bot.middlewares import AccessLevel
+
 router = Router()
+
+# Middleware registration to ensure users have the correct access level
+router.message.middleware(AccessLevel(1))
 
 @router.message(Command("example"))
 async def handle_example_command(message: Message):
@@ -146,7 +151,12 @@ from aiogram import Router, F
 from aiogram.types import Message
 from aiogram.filters import Command
 
+from bot.middlewares import AccessLevel
+
 router = Router()
+
+# Middleware registration to ensure users have the correct access level
+router.message.middleware(AccessLevel(1))
 
 @router.message(Command("new_command"))
 async def handle_new_command(message: Message):

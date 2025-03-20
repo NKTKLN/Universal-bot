@@ -1,7 +1,11 @@
 import os
 import io
+import re
+import ast
+import sys
 import random
 import string
+import subprocess
 import importlib.util
 from typing import Dict, List, Optional, Any
 from bot.config import logger, config
@@ -21,6 +25,23 @@ def check_plugin_exists(plugin_name: str) -> str:
     return plugin_path
 
 
+def install_dependencies(dependencies: List[str]) -> bool:
+    """
+    Installs the given list of dependencies using pip.
+    
+    :param dependencies: List of dependencies to install.
+    :return: True if the package was installed successfully, False otherwise.
+    """
+    for dependency in dependencies:
+        try:
+            logger.info(f"Installing dependency: {dependency}")
+            subprocess.check_call([sys.executable, "-m", "pip", "install", dependency])
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Failed to install dependency '{dependency}': {e}")
+            return False  # Return False if installation fails
+    return True
+
+
 def load_plugin_module(plugin_name: str, plugin_path: str) -> Any:
     """
     Loads the plugin module from the given file path.
@@ -29,10 +50,14 @@ def load_plugin_module(plugin_name: str, plugin_path: str) -> Any:
     :param plugin_path: Path to the plugin file.
     :return: The loaded plugin module.
     """
-    spec = importlib.util.spec_from_file_location(plugin_name, plugin_path)
-    plugin_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(plugin_module)
-    return plugin_module
+    try:
+        spec = importlib.util.spec_from_file_location(plugin_name, plugin_path)
+        plugin_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(plugin_module)
+        return plugin_module
+    except Exception as e:
+        logger.error(f"Error loading plugin {plugin_name}: {e}")
+        return None
 
 
 def extract_plugin_metadata(plugin_module: Any) -> Dict[str, Optional[str]]:
@@ -53,6 +78,31 @@ def extract_plugin_metadata(plugin_module: Any) -> Dict[str, Optional[str]]:
         raise ValueError(f"The plugin metadata contains an empty 'name' field.")
 
     return plugin_metadata
+
+
+def extract_plugin_metadata_from_file(plugin_path: str) -> Dict[str, Optional[str]]:
+    """
+    Extracts plugin metadata from its file without executing the code.
+
+    :param plugin_path: Path to the plugin file.
+    :return: A dictionary containing the plugin's metadata.
+    """
+    try:
+        with open(plugin_path, 'r', encoding='utf-8') as plugin_file:
+            plugin_content = plugin_file.read()
+
+        # Search for the PLUGIN_METADATA line
+        match = re.search(r"PLUGIN_METADATA\s*=\s*({.*?})", plugin_content, re.DOTALL)
+        if match:
+            metadata_str = match.group(1)
+            # Safely convert the string to a dictionary using ast.literal_eval
+            plugin_metadata = ast.literal_eval(metadata_str)
+            return plugin_metadata
+
+        else:
+            raise ValueError("Failed to find PLUGIN_METADATA in the plugin file.")
+    except Exception as e:
+        raise RuntimeError(f"Error while extracting plugin metadata: {e}")
 
 
 def extract_plugin_functions(plugin_module: Any) -> List[Function]:
@@ -85,6 +135,19 @@ def get_plugin_metadata(plugin_name: str) -> Plugin:
     """
     plugin_path = check_plugin_exists(plugin_name)
     plugin_module = load_plugin_module(plugin_name, plugin_path)
+
+    if plugin_module is None:
+        logger.info(f"Attempting to install missing dependencies for plugin: {plugin_name}")
+        plugin_metadata = extract_plugin_metadata_from_file(plugin_path)
+        
+        dependencies = plugin_metadata.get('dependencies', [])
+        install_dependencies(dependencies)
+
+        plugin_module = load_plugin_module(plugin_name, plugin_path)
+        if plugin_module is None:
+            logger.error(f"Failed to load plugin {plugin_name} after installing dependencies.")
+            return None
+
     plugin_metadata = extract_plugin_metadata(plugin_module)
     plugin_functions = extract_plugin_functions(plugin_module)
 
@@ -128,8 +191,7 @@ def extract_plugin_metadata_from_io(io_stream: io.BytesIO)-> Dict[str, Optional[
         plugin_file.write(plugin_content)
 
     try:
-        plugin_module = load_plugin_module(random_plugin_name, plugin_file_path)
-        plugin_metadata = extract_plugin_metadata(plugin_module)
+        plugin_metadata = extract_plugin_metadata_from_file(plugin_file_path)
         return plugin_metadata
     
     finally:

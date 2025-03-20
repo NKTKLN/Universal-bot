@@ -27,22 +27,6 @@ class PluginManager:
         self.bot = bot
         self.loaded_plugins: List[Plugin] = []
 
-    def _install_dependencies(self, dependencies: List[str]) -> bool:
-        """
-        Installs the given list of dependencies using pip.
-        
-        :param dependencies: List of dependencies to install.
-        :return: True if the package was installed successfully, False otherwise.
-        """
-        for dependency in dependencies:
-            try:
-                logger.info(f"Installing dependency: {dependency}")
-                subprocess.check_call([sys.executable, "-m", "pip", "install", dependency])
-            except subprocess.CalledProcessError as e:
-                logger.error(f"Failed to install dependency '{dependency}': {e}")
-                return False  # Return False if installation fails
-        return True
-
     def _load_plugin(self, plugin: Plugin) -> Optional[any]:
         """
         Loads the plugin dynamically and executes its tasks.
@@ -93,12 +77,6 @@ class PluginManager:
                 # Rename the file if necessary
                 if plugin_file_name != plugin_name:
                     self._rename_plugin_file(plugin_file_name, plugin_name)
-
-                # Install dependencies
-                if plugin_metadata.dependencies:
-                    if not self._install_dependencies(plugin_metadata.dependencies):
-                        logger.warning(f"Skipping plugin '{plugin_name}' due to installation failure.")
-                        continue
 
                 valid_plugins.append(plugin_name)
             except Exception as error:

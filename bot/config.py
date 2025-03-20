@@ -3,6 +3,7 @@ import sys
 import logging
 from typing import Any
 from pathlib import Path
+from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
 
 
@@ -15,10 +16,9 @@ class Config(BaseSettings):
     PLUGIN_NAME_REGEX: str = r"^[a-zA-Z0-9_]+$"
     PLUGINS_DIR: Any = Path(__file__).resolve().parent / 'custom_plugins'
 
-    VERSION: str = "1.0.0"
+    VERSION: str = "1.1.0"
 
-    class Config:
-        env_file = ".env"
+    model_config = ConfigDict(env_file=".env")
 
 
 config = Config()

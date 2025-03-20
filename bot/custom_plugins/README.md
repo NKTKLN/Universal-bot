@@ -2,27 +2,25 @@
 
 ## 1. Plugin Metadata Structure
 
-Each plugin is implemented as a Python module containing metadata and core functionality. The metadata is defined as a comment block at the beginning of the file and follows this structure:
+Each plugin is implemented as a Python module containing metadata and core functionality. The metadata is defined as a dictionary at the beginning of the file and follows this structure:
 
 ```python
-"""
-Plugin: unique_plugin_name  # Unique name for the plugin
-Title: Plugin Title  # Displayed name of the plugin
-Version: 1.0.0  # Plugin version
-Description: A brief description of the plugin’s functionality.
-
-Install: package_name  # Dependencies required for the plugin
-Install: another_package  # Add as many dependencies as needed
-"""
+PLUGIN_METADATA = {
+    "name": "unique_plugin_name",  # Unique name for the plugin
+    "title": "Plugin Title",  # Displayed name of the plugin
+    "version": "1.0.0",  # Plugin version
+    "description": "A brief description of the plugin’s functionality.",
+    "dependencies": []  # List of dependencies required for the plugin
+}
 ```
 
 ### Metadata Fields
 
-- **Plugin** (mandatory): A unique identifier for the plugin.
-- **Title** (optional): The display name of the plugin.
-- **Version** (optional): The version of the plugin, adhering to semantic versioning.
-- **Description** (optional): A brief description of what the plugin does.
-- **Install** (optional): Specifies the packages required for the plugin. Add one line for each dependency.
+- **name** (mandatory): A unique identifier for the plugin.
+- **title** (optional): The display name of the plugin.
+- **version** (optional): The version of the plugin, adhering to semantic versioning.
+- **description** (optional): A brief description of what the plugin does.
+- **dependencies** (optional): A list of packages required for the plugin. Add each dependency as a separate string in the list.
 
 ---
 
@@ -35,12 +33,13 @@ The plugin's main functionality should use the `aiogram` library. It handles com
 Here’s an example of a plugin that responds to a command and a button press:
 
 ```python
-"""
-Plugin: example_plugin
-Title: Example Plugin
-Version: 1.0.0
-Description: Demonstrates a plugin structure with command and button actions.
-"""
+PLUGIN_METADATA = {
+    "name": "example_plugin",
+    "title": "Example Plugin",
+    "version": "1.0.0",
+    "description": "Demonstrates a plugin structure with command and button actions.",
+    "dependencies": []
+}
 
 from aiogram import Router, F
 from aiogram.types import Message
@@ -54,36 +53,46 @@ router = Router()
 router.message.middleware(AccessLevel(1))
 
 @router.message(Command("example"))
-async def handle_example_command(message: Message):
-    """
-    name: example_command
-    type: command
-    description: Responds to the /example command with a demonstration message.
-    """
+async def example_command(message: Message):
     await message.answer("This is an example command response.")
 
+# Metadata for the 'example_command' action
+example_command.meta = {
+    "name": "example_command",
+    "type": "command",
+    "description": "Responds to the /example command with a demonstration message."
+}
+
 @router.message(F.text == "example_button")
-async def handle_example_button(message: Message):
-    """
-    name: example_button
-    type: button
-    description: Responds when the button with the text 'example_button' is pressed.
-    """
+async def example_button(message: Message):
     await message.answer("This is an example button response.")
+
+# Metadata for the 'example_button' action
+example_button.meta = {
+    "name": "example_button",
+    "type": "button",
+    "description": "Responds when the button with the text 'example_button' is pressed."
+}
 ```
+
+In this updated structure, **each action** (such as `example_command` or `example_button`) is assigned its own metadata via the `meta` attribute. This allows each action to be uniquely described with:
+
+- **name**: A unique identifier for the action.
+- **type**: The type of action (e.g., `command`, `button`).
+- **description**: A brief explanation of the action’s behavior.
 
 ---
 
 ## 3. Action Documentation Format
 
-Each plugin action (e.g., command, button, or task) requires descriptive metadata in the form of comments for system integration:
+Each plugin action (e.g., command, button, or task) requires descriptive metadata in the form of the `.meta` attribute for system integration:
 
 ```python
-"""
-name: action_name  # Unique identifier for the action
-type: action_type  # The type of action: 'command', 'button', or 'task'
-description: A brief explanation of the action’s purpose and behavior.
-"""
+action.meta = {
+    "name": "action_name",  # Unique identifier for the action
+    "type": "action_type",  # The type of action: 'command', 'button', or 'task'
+    "description": "A brief explanation of the action’s purpose and behavior."
+}
 ```
 
 ### Fields
@@ -104,12 +113,13 @@ Background tasks are actions that run continuously or at specific intervals. The
 ### Example Background Task Plugin
 
 ```python
-"""
-Plugin: daily_message
-Title: Daily Message Plugin
-Version: 1.0.0
-Description: Sends a daily message to all subscribed users at 6:00 AM.
-"""
+PLUGIN_METADATA = {
+    "name": "daily_message",
+    "title": "Daily Message Plugin",
+    "version": "1.0.0",
+    "description": "Sends a daily message to all subscribed users at 6:00 AM.",
+    "dependencies": []
+}
 
 import asyncio
 from datetime import datetime, timedelta
@@ -117,20 +127,22 @@ from aiogram import Bot
 from bot.db import get_all_users  # Custom module to retrieve user data
 
 async def daily_task(bot: Bot):
-    """
-    name: daily_task
-    type: task
-    description: Sends a daily greeting to all users at 6:00 AM.
-    """
     while True:
         now = datetime.now()
         next_run = (now + timedelta(days=1)).replace(hour=6, minute=0, second=0, microsecond=0)
         sleep_duration = (next_run - now).total_seconds()
         await asyncio.sleep(sleep_duration)
 
-        users = get_all_users()  # Retrieve user list from database
+        users = get_all_users()  # Retrieve user list from the database
         for user in users:
             await bot.send_message(chat_id=user.id, text="Good morning! 🌅 Here's your daily message.")
+
+# Metadata for the 'daily_task' action
+daily_task.meta = {
+    "name": "daily_task",
+    "type": "task",
+    "description": "Sends a daily greeting to all users at 6:00 AM."
+}
 ```
 
 ---
@@ -140,12 +152,13 @@ async def daily_task(bot: Bot):
 When developing new plugins, follow the same structure for metadata, actions, and implementation. Here's an example of another plugin:
 
 ```python
-"""
-Plugin: new_plugin
-Title: New Plugin
-Version: 1.0.0
-Description: Demonstrates how to create a new plugin with command and button actions.
-"""
+PLUGIN_METADATA = {
+    "name": "new_plugin",
+    "title": "New Plugin",
+    "version": "1.0.0",
+    "description": "Demonstrates how to create a new plugin with command and button actions.",
+    "dependencies": []
+}
 
 from aiogram import Router, F
 from aiogram.types import Message
@@ -159,7 +172,7 @@ router = Router()
 router.message.middleware(AccessLevel(1))
 
 @router.message(Command("new_command"))
-async def handle_new_command(message: Message):
+async def new_command(message: Message):
     """
     name: new_command
     type: command
@@ -167,14 +180,28 @@ async def handle_new_command(message: Message):
     """
     await message.answer("This is a new plugin command response.")
 
+# Metadata for the 'new_command' action
+new_command.meta = {
+    "name": "new_command",
+    "type": "command",
+    "description": "Handles the /new_command and demonstrates a new plugin command."
+}
+
 @router.message(F.text == "new_button")
-async def handle_new_button(message: Message):
+async def new_button(message: Message):
     """
     name: new_button
     type: button
     description: Responds when the button with the text 'new_button' is pressed.
     """
     await message.answer("This is a new plugin button response.")
+
+# Metadata for the 'new_button' action
+new_button.meta = {
+    "name": "new_button",
+    "type": "button",
+    "description": "Responds when the button with the text 'new_button' is pressed."
+}
 ```
 
 ---
@@ -188,4 +215,4 @@ async def handle_new_button(message: Message):
 
 ---
 
-By adhering to these guidelines, you can create robust, maintainable, and expandable plugins for your system.
+By following these guidelines, you can create robust, maintainable, and expandable plugins for your system.

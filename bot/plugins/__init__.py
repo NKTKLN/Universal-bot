@@ -1,2 +1,2 @@
 from .plugin_manager import Plugin, PluginManager
-from .parser import parse_functions_and_descriptions, parse_plugin_metadata, get_plugin_metadata_from_content
+from .parser import check_plugin_exists, load_plugin_module, extract_plugin_metadata, extract_plugin_functions, get_plugin_metadata, extract_plugin_metadata_from_io

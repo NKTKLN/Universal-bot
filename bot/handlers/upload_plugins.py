@@ -6,7 +6,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from bot.middlewares import AccessLevel
 from bot.loader import plugin_manager
-from bot.plugins import parse_plugin_metadata
+from bot.plugins import extract_plugin_metadata_from_io
 from bot.keyboards import upload_plugin_buttons, reboot_after_plugin_installation_buttons
 
 router = Router()
@@ -75,14 +75,14 @@ async def handle_plugin_upload(message: types.Message, state: FSMContext):
 
     # Parse the plugin metadata from the file content
     file_content.seek(0)
-    plugin_metadata = parse_plugin_metadata(file_content.read().decode('utf-8'))
+    plugin_metadata = extract_plugin_metadata_from_io(file_content)
 
     # Check if the plugin is already loaded or if it is an update
     is_plugin_update = plugin_metadata["name"] in [plugin.name for plugin in plugin_manager.loaded_plugins]
 
     # Try installing the plugin from the uploaded file
     file_content.seek(0)
-    installation_status = await plugin_manager.install_plugin_from_io(file_content)
+    installation_status = await plugin_manager.install_plugin_from_io(file_content, plugin_metadata)
     
     # If installation failed, notify the user
     if not installation_status:

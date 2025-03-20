@@ -5,12 +5,11 @@ import sys
 import pkgutil
 import asyncio
 import subprocess
-import importlib.util
 from aiogram import Bot, Dispatcher
-from typing import List, Optional
+from typing import List, Optional, Dict
 from bot.models import Plugin
 from bot.config import logger, config
-from .parser import get_plugin_metadata, get_plugin_metadata_from_content
+from .parser import load_plugin_module, get_plugin_metadata
 
 
 class PluginManager:
@@ -56,10 +55,7 @@ class PluginManager:
         if not os.path.exists(plugin.file_path):
             raise FileNotFoundError(f"Plugin file {plugin.name}.py not found")
 
-        # Load the plugin module dynamically
-        spec = importlib.util.spec_from_file_location(plugin.name, plugin.file_path)
-        plugin_module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(plugin_module)
+        plugin_module = load_plugin_module(plugin.name, plugin.file_path)
 
         # Find and execute functions marked as "task"
         for function in plugin.functions:
@@ -201,22 +197,20 @@ class PluginManager:
         except Exception as error:
             logger.error(f"Failed to delete plugin '{plugin_name}': {error}")
 
-    async def install_plugin_from_io(self, io_stream: io.BytesIO) -> bool:
+    async def install_plugin_from_io(self, io_stream: io.BytesIO, plugin_metadata: Dict[str, Optional[str]]) -> bool:
         """
         Installs a plugin from an I/O stream containing the plugin's content (Python file).
 
         :param io_stream: The I/O stream containing the plugin Python file content.
+        :param plugin_metadata: A dictionary containing metadata about the plugin.
         :return: True if the plugin was installed successfully, False otherwise.
         """
         try:
             # Read the I/O stream and save the content as a Python file
             plugin_content = io_stream.read().decode('utf-8')
 
-            # Extract metadata from the plugin content (assuming a function exists for this)
-            plugin_metadata = get_plugin_metadata_from_content(plugin_content)
-
             # Create the plugin filename based on the metadata
-            plugin_name = plugin_metadata.name
+            plugin_name = plugin_metadata["name"]
             plugin_file_path = os.path.join(self.plugins_dir, f"{plugin_name}.py")
 
             # Save the plugin content as a Python file in the plugins directory

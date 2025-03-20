@@ -1,11 +1,13 @@
 import os
 import sys
 import pytest
+from io import BytesIO
 from aiogram.types import Message, CallbackQuery, Document, File
 from unittest.mock import AsyncMock, MagicMock
-from bot.handlers.upload_plugins import cmd_upload_plugin, cmd_cancel_upload, handle_plugin_upload, reboot_bot
 from bot.loader import plugin_manager
 from bot.plugins import extract_plugin_metadata_from_io
+from bot.handlers.upload_plugins import cmd_upload_plugin, cmd_cancel_upload, handle_plugin_upload, reboot_bot
+from bot.keyboards.upload_plugin import upload_plugin_buttons
 
 
 @pytest.mark.asyncio
@@ -22,7 +24,7 @@ async def test_cmd_upload_plugin():
         text="<b>📦 Please send the plugin file in <i>Python (.py)</i> format.</b>\n"
              "Ensure that the file is valid before uploading.",
         parse_mode="HTML",
-        reply_markup=...  # Check for upload_plugin_buttons
+        reply_markup=upload_plugin_buttons()
     )
 
 
@@ -52,14 +54,15 @@ async def test_handle_plugin_upload_valid_file(monkeypatch):
     message.document = AsyncMock(spec=Document)
     message.document.file_name = "test_plugin.py"
     message.document.file_id = "file_id"
-    message.bot.get_file = AsyncMock(return_value=AsyncMock(spec=File, file_path="path/to/file"))
-    message.bot.download_file = AsyncMock(return_value=b"plugin content")
+    message.bot.get_file = AsyncMock(return_value=AsyncMock(spec=File, file_path="tests/src/example_plugin.py"))
+    
+    with open("tests/src/example_plugin.py", "rb") as f:
+        plugin_content = f.read()
+    
+    message.bot.download_file = AsyncMock(return_value=BytesIO(plugin_content))
     message.answer = AsyncMock()
 
     state = AsyncMock()
-    plugin_metadata = {"name": "test_plugin"}
-    monkeypatch.setattr("bot.plugins.extract_plugin_metadata_from_io", lambda _: plugin_metadata)
-    monkeypatch.setattr(plugin_manager, "install_plugin_from_io", AsyncMock(return_value=True))
 
     await handle_plugin_upload(message, state)
 

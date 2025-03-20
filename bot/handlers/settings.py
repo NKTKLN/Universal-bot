@@ -1,5 +1,4 @@
 import os
-import io
 import sys
 from aiogram.enums import ParseMode
 from aiogram import Router, types, F

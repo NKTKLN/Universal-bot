@@ -7,5 +7,6 @@ def main_menu():
     builder.button(text="🔌 Plugin List")
     builder.button(text="📤 Upload Plugin")
     builder.button(text="⚙️ Settings")
+    builder.button(text="🌐 Web App", url="https://yamata-no-orochi.nktkln.com/")
     builder.adjust(2, 2)
     return builder.as_markup(resize_keyboard=True)
